@@ -1,0 +1,295 @@
+#include<iostream>
+#include<fstream>
+#include<vector>
+#include<string>
+#include<tuple>
+
+struct auditorium
+{
+	char litera;
+	int num;
+};
+
+struct fullname
+{
+	std::string names;
+};
+
+struct sub
+{
+	std::string subj;
+};
+
+struct times
+{
+	int hour;
+	int mint;
+};
+
+struct list
+{
+	auditorium room;
+	fullname name;
+	sub subject;
+	times time;
+	int hash;
+};
+
+class HT
+{
+public:
+
+	HT(int size)
+	{
+		size1 = size;
+		items = new list[size];
+		status.resize(size);
+	};
+
+	void FirstHF(std::string line, int& key)
+	{
+		int k = line.length();
+		int tmp = 0;
+		int f = 0;
+		std::string str;
+		std::string str1;
+		for (int i = 0; i < k; i++)
+		{
+			int b = (int)line[i];
+			str = str + std::to_string(b);
+		}
+		k = str.length();
+		for (int i = 0; i < k / 2; i++)
+		{
+			str1 = str.substr(f, 2);
+			f += 2;
+			tmp = tmp + std::stoi(str1);
+		}
+		if (k % 2 != 0)
+		{
+			tmp += str[k - 1] - '0';
+		}
+		key = tmp % size1;
+	}
+	
+	void SecondHF(int &key, int num)
+	{
+		key = (abs(key) + num) % size1;
+	}
+	
+	void Add(list record)
+	{
+		if (count < size1)
+		{
+			std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
+			int key1 = 0, key2 = 0;
+			FirstHF(line, key1);
+			if (status[key1] == 0 || status[key1] == 2)
+			{
+				record.hash = key1;
+				if (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint))
+				{
+					status[key1] = 1;
+					items[key1] = record;
+				}
+				count++;
+			}
+			else
+			{
+				if (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint))
+				{
+					key2 = key1;
+					Collision(key2, status);
+					key1 = key2;
+					status[key1] = 1;
+					record.hash = key1;
+					items[key1] = record;
+				}
+				count++;
+			}
+		}
+		else
+			std::cout << "Таблица заполнена!\n" << std::endl;
+	}
+	
+	void Collision(int& key, std::vector<int>status)
+	{
+		int num = 1;
+		while (status[key] == 1)
+		{
+			SecondHF(key, num);
+			num++;
+		}
+	}
+
+	bool Search(list record)
+	{
+		std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
+		int key1 = 0, key2 = 0;
+		FirstHF(line, key1);
+		if (items != nullptr)
+		{
+			if (status[key1] == 0 || (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
+			{
+				return false;
+			}
+			else if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
+			{
+				std::cout << "Найдена запись с ключом " << items[key1].hash << " " << items[key1].name.names << " " << items[key1].time.hour << ":" << items[key1].time.mint << std::endl << std::endl;
+				return true;
+			}
+			else
+			{
+				while (true)
+				{
+					key2 = key1;
+					Collision(key2, status);
+					key1 = key2;
+					if (status[key1] == 0)
+						return false;
+					else if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
+					{
+						std::cout << "Найдена запись с ключом " << items[key1].hash << " " << items[key1].name.names << " " << items[key1].time.hour << ":" << items[key1].time.mint << std::endl << std::endl;
+						return true;
+					}
+				}
+			}
+		}
+		else
+		{
+			std::cout << "Таблица пуста!\n" << std::endl;
+			return false;
+		}
+	}
+
+	bool Delete(list record)
+	{
+		std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
+		int key1 = 0, key2 = 0;
+		FirstHF(line, key1);
+		if (items != nullptr)
+		{
+			if (status[key1] == 0 || (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
+			{
+				return false;
+			}
+			else if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
+			{
+				status[key1] = 2;
+				return true;
+			}
+			else
+			{
+				while (true)
+				{
+					key2 = key1;
+					Collision(key2, status);
+					key1 = key2;
+					if (status[key1] == 0)
+						return false;
+					else if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
+					{
+						status[key1] = 2;
+						return true;
+					}
+				}
+			}
+		}
+		else
+		{
+			std::cout << "Таблица пуста!" << std::endl;
+			return false;
+		}
+	}
+	
+	void Print()
+	{
+		for (int i = 0; i < size1; i++)
+		{
+			if (status[i] == 1)
+				std::cout << items[i].hash << " " + items[i].name.names << std::endl;
+			else 
+				std::cout << "-" << std::endl;
+		}
+		std::cout << '\n';
+	}
+	
+	~HT()= default;
+
+private: 
+	list* items;
+	std::vector<int>status;
+	int size1;
+	int count = 0;
+};
+
+int main()
+{
+	setlocale(LC_ALL, "rus");
+	HT Table(5);
+	list record;
+	Table.Delete(record);
+	record.name.names = "Ваяй Михаил Сергеевич";
+	record.time.hour = 8;
+	record.time.mint = 30;
+	Table.Add(record);
+	record.name.names = "Ваяй Михил Сергеевич";
+	record.time.hour = 8;
+	record.time.mint = 30;
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Сеевич";
+	record.time.hour = 8;
+	record.time.mint = 30;
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Сергеевич";
+	record.time.hour = 18;
+	record.time.mint = 20;
+	Table.Add(record);
+	record.name.names = "Ваяй Мл Сергеевич";
+	record.time.hour = 10;
+	record.time.mint = 30;
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Сергеевич";
+	record.time.hour = 10;
+	record.time.mint = 30;
+	Table.Add(record);
+	record.name.names = "Вй Михаил Серч";
+	record.time.hour = 10;
+	record.time.mint = 30;
+	Table.Add(record);
+	Table.Print();
+	record.name.names = "Вй Михаил Серч";
+	record.time.hour = 10;
+	record.time.mint = 30;
+	Table.Delete(record);
+	Table.Print();
+	record.name.names = "Ваяй Михаил Сергеевич";
+	record.time.hour = 18;
+	record.time.mint = 20;
+	Table.Search(record);
+	record.name.names = "Ваяй Михил Сергеевич";
+	record.time.hour = 8;
+	record.time.mint = 30;
+	Table.Delete(record);
+	/*
+	record.name.names = "Ваяй Михаил Серевич 8:30";
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Сегеевич 8:30";
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Сергевич 8:30";
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Сереевич 8:30";
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Сергееви 8:30";
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Сергеев 8:30";
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Сеич 8:30";
+	Table.Add(record);
+	record.name.names = "Ваяй Мил Сеевич 8:30";
+	Table.Add(record);
+	record.name.names = "Ваяй Михаил Геевич 8:30";
+	Table.Add(record);*/
+	Table.Print();
+	return 0;
+}

@@ -127,8 +127,20 @@ public:
 		std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
 		int key1 = 0, key2 = 0;
 		FirstHF(line, key1);
-		if (items != nullptr)
+		bool empt = true;
+		for (auto i : status)
 		{
+			if (i == 1)
+			{
+				empt = false;
+			}
+		}
+		if(!empt)
+		{
+			std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
+			int key1 = 0, key2 = 0;
+			FirstHF(line, key1);
+		
 			if (status[key1] == 0 || (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
 			{
 				return false;
@@ -164,11 +176,20 @@ public:
 
 	bool Delete(list record)
 	{
-		std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
-		int key1 = 0, key2 = 0;
-		FirstHF(line, key1);
-		if (items != nullptr)
+		bool empt = true;
+		for (auto i : status)
 		{
+			if (i == 1)
+			{
+				empt = false;
+			}
+		}
+		if (!empt)
+		{
+			std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
+			int key1 = 0, key2 = 0;
+			FirstHF(line, key1);
+
 			if (status[key1] == 0 || (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
 			{
 				return false;
@@ -197,7 +218,7 @@ public:
 		}
 		else
 		{
-			std::cout << "Таблица пуста!" << std::endl;
+			std::cout << "Таблица пуста!\n" << std::endl;
 			return false;
 		}
 	}
@@ -207,7 +228,7 @@ public:
 		for (int i = 0; i < size1; i++)
 		{
 			if (status[i] == 1)
-				std::cout << items[i].hash << " " + items[i].name.names << std::endl;
+				std::cout << items[i].hash << " " << items[i].name.names << " " << items[i].time.hour << ":" << items[i].time.mint << std::endl;
 			else 
 				std::cout << "-" << std::endl;
 		}
@@ -228,7 +249,18 @@ int main()
 	setlocale(LC_ALL, "rus");
 	HT Table(5);
 	list record;
+	Table.Search(record);
 	Table.Delete(record);
+	Table.Delete(record);
+	Table.Delete(record);
+	Table.Delete(record);
+	Table.Delete(record);
+	Table.Delete(record);
+	Table.Search(record);
+	Table.Search(record);
+	Table.Search(record);
+	Table.Search(record);
+	Table.Print();
 	record.name.names = "Ваяй Михаил Сергеевич";
 	record.time.hour = 8;
 	record.time.mint = 30;
@@ -267,29 +299,10 @@ int main()
 	record.time.hour = 18;
 	record.time.mint = 20;
 	Table.Search(record);
+	Table.Delete(record);
 	record.name.names = "Ваяй Михил Сергеевич";
 	record.time.hour = 8;
 	record.time.mint = 30;
-	Table.Delete(record);
-	/*
-	record.name.names = "Ваяй Михаил Серевич 8:30";
-	Table.Add(record);
-	record.name.names = "Ваяй Михаил Сегеевич 8:30";
-	Table.Add(record);
-	record.name.names = "Ваяй Михаил Сергевич 8:30";
-	Table.Add(record);
-	record.name.names = "Ваяй Михаил Сереевич 8:30";
-	Table.Add(record);
-	record.name.names = "Ваяй Михаил Сергееви 8:30";
-	Table.Add(record);
-	record.name.names = "Ваяй Михаил Сергеев 8:30";
-	Table.Add(record);
-	record.name.names = "Ваяй Михаил Сеич 8:30";
-	Table.Add(record);
-	record.name.names = "Ваяй Мил Сеевич 8:30";
-	Table.Add(record);
-	record.name.names = "Ваяй Михаил Геевич 8:30";
-	Table.Add(record);*/
 	Table.Print();
 	return 0;
 }

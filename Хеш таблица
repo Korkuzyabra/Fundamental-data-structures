@@ -46,126 +46,140 @@ public:
 		status.resize(size);
 	};
 
-	void FirstHF(std::string line, int& key)
+	int FirstHF(std::string line, int t, int m)
 	{
-		int k = line.length();
-		int tmp = 0;
-		int f = 0;
-		std::string str;
-		std::string str1;
-		for (int i = 0; i < k; i++)
+		std::vector<std::string> ch;
+		for (int i = 0; i < line.length(); i += 2)
 		{
-			int b = (int)line[i];
-			str = str + std::to_string(b);
+			ch.push_back(line.substr(i, 2));
 		}
-		k = str.length();
-		for (int i = 0; i < k / 2; i++)
+		unsigned long sum = 0;
+		for (auto c : ch)
 		{
-			str1 = str.substr(f, 2);
-			f += 2;
-			tmp = tmp + std::stoi(str1);
+			if (c.length() % 2 == 0)
+				sum = sum + abs((int)c[0]) + abs((int)c[1]);
+			else
+				sum += abs((int)c[0]);
 		}
-		if (k % 2 != 0)
-		{
-			tmp += str[k - 1] - '0';
-		}
-		key = tmp % size1;
+		sum = sum + t + m;
+		return sum % size1;
 	}
-	
-	void SecondHF(int &key, int num)
+
+	int SecondHF(int key)
 	{
-		key = (abs(key) + num) % size1;
+		return (key + 1) % size1;
 	}
-	
-	void Add(list record)
+
+	int CollisionAdd(int key, std::vector<int>status, list record)
+	{
+
+		int num = 1, tmp = key;
+		bool zero = false, same = false;
+		while ((status[tmp] != 0) && (num < size1))
+		{
+			tmp = SecondHF(tmp);
+			if ((status[tmp] == 1) && std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[tmp].name.names, items[tmp].room.litera, items[tmp].room.num, items[tmp].subject.subj, items[tmp].time.hour, items[tmp].time.mint))
+			{
+				same = true;
+			}
+			num++;
+		}
+		if (!same)
+		{
+			if (status[tmp] == 0)
+			{
+				zero = true;
+			}
+			if (!zero)
+			{
+				tmp = key;
+				while ((status[tmp] != 2) && (num < size1))
+				{
+					tmp = SecondHF(tmp);
+					num++;
+				}
+			}
+			key = tmp;
+			return key;
+		}
+		else
+			return key = -1;
+		
+	}
+
+	int Collision(int key, std::vector<int>status, list record)
+	{
+		int num = 1;
+		while (num < size1)
+		{
+			num++;
+			key = SecondHF(key);
+			if ((status[key] == 0) || (status[key] == 2))
+			{
+				key = -1;
+				break;
+			}
+			else if ((status[key] == 1) && std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key].name.names, items[key].room.litera, items[key].room.num, items[key].subject.subj, items[key].time.hour, items[key].time.mint))
+			{
+				break;
+			}
+		}
+		return key;
+	}
+
+	void Add(list& record)
 	{
 		if (count < size1)
 		{
-			std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
-			int key1 = 0, key2 = 0;
-			FirstHF(line, key1);
-			if (status[key1] == 0 || status[key1] == 2)
+			int key1 = FirstHF(record.name.names, record.time.hour, record.time.mint);
+			record.hash = key1;
+			if (status[key1] == 0)
 			{
-				record.hash = key1;
-				if (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint))
-				{
-					status[key1] = 1;
-					items[key1] = record;
-				}
+				status[key1] = 1;
+				items[key1] = record;
 				count++;
 			}
 			else
 			{
-				if (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint))
+				if ((status[key1] == 2) || ((status[key1] == 1) && std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
 				{
-					key2 = key1;
-					Collision(key2, status);
-					key1 = key2;
-					status[key1] = 1;
-					record.hash = key1;
-					items[key1] = record;
+					int key2 = CollisionAdd(key1, status, record);
+					if (key2 != -1)
+					{
+						status[key2] = 1;
+						items[key2] = record;
+						count++;
+					}
 				}
-				count++;
 			}
 		}
 		else
 			std::cout << "Таблица заполнена!\n" << std::endl;
 	}
-	
-	void Collision(int& key, std::vector<int>status)
-	{
-		int num = 1;
-		while (status[key] == 1)
-		{
-			SecondHF(key, num);
-			num++;
-		}
-	}
 
 	bool Search(list record)
 	{
-		std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
-		int key1 = 0, key2 = 0;
-		FirstHF(line, key1);
-		bool empt = true;
-		for (auto i : status)
+		if (count != 0)
 		{
-			if (i == 1)
-			{
-				empt = false;
-			}
-		}
-		if(!empt)
-		{
-			std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
-			int key1 = 0, key2 = 0;
-			FirstHF(line, key1);
-		
-			if (status[key1] == 0 || (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
-			{
-				return false;
-			}
-			else if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
+			int key1 = FirstHF(record.name.names, record.time.hour, record.time.mint);
+
+			if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
 			{
 				std::cout << "Найдена запись с ключом " << items[key1].hash << " " << items[key1].name.names << " " << items[key1].time.hour << ":" << items[key1].time.mint << std::endl << std::endl;
 				return true;
 			}
 			else
 			{
-				while (true)
+				int key2 = Collision(key1, status, record);
+				if ((key2 != -1) && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key2].name.names, items[key2].room.litera, items[key2].room.num, items[key2].subject.subj, items[key2].time.hour, items[key2].time.mint)))
 				{
-					key2 = key1;
-					Collision(key2, status);
-					key1 = key2;
-					if (status[key1] == 0)
-						return false;
-					else if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
-					{
-						std::cout << "Найдена запись с ключом " << items[key1].hash << " " << items[key1].name.names << " " << items[key1].time.hour << ":" << items[key1].time.mint << std::endl << std::endl;
-						return true;
-					}
+					std::cout << "Найдена запись " << items[key2].name.names << " " << items[key2].time.hour << ":" << items[key2].time.mint << std::endl << std::endl;
+					return true;
 				}
+				else
+					return false;
 			}
+
 		}
 		else
 		{
@@ -176,44 +190,27 @@ public:
 
 	bool Delete(list record)
 	{
-		bool empt = true;
-		for (auto i : status)
+		if (count != 0)
 		{
-			if (i == 1)
-			{
-				empt = false;
-			}
-		}
-		if (!empt)
-		{
-			std::string line = record.name.names + std::to_string(record.time.hour) + std::to_string(record.time.mint);
-			int key1 = 0, key2 = 0;
-			FirstHF(line, key1);
+			int key1 = FirstHF(record.name.names, record.time.hour, record.time.mint);
 
-			if (status[key1] == 0 || (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) != std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
-			{
-				return false;
-			}
-			else if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
+			if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
 			{
 				status[key1] = 2;
+				count--;
 				return true;
 			}
 			else
 			{
-				while (true)
+				int key2 = Collision(key1, status, record);
+				if ((key2 != -1) && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key2].name.names, items[key2].room.litera, items[key2].room.num, items[key2].subject.subj, items[key2].time.hour, items[key2].time.mint)))
 				{
-					key2 = key1;
-					Collision(key2, status);
-					key1 = key2;
-					if (status[key1] == 0)
-						return false;
-					else if (status[key1] == 1 && (std::tie(record.name.names, record.room.litera, record.room.num, record.subject.subj, record.time.hour, record.time.mint) == std::tie(items[key1].name.names, items[key1].room.litera, items[key1].room.num, items[key1].subject.subj, items[key1].time.hour, items[key1].time.mint)))
-					{
-						status[key1] = 2;
-						return true;
-					}
+					status[key2] = 2;
+					count--;
+					return true;
 				}
+				else
+					return false;
 			}
 		}
 		else
@@ -222,22 +219,23 @@ public:
 			return false;
 		}
 	}
-	
+
 	void Print()
 	{
 		for (int i = 0; i < size1; i++)
 		{
+			std::cout << "[" << i << "]" << " ";
 			if (status[i] == 1)
 				std::cout << items[i].hash << " " << items[i].name.names << " " << items[i].time.hour << ":" << items[i].time.mint << std::endl;
-			else 
+			else
 				std::cout << "-" << std::endl;
 		}
 		std::cout << '\n';
 	}
-	
-	~HT()= default;
 
-private: 
+	~HT() = default;
+
+private:
 	list* items;
 	std::vector<int>status;
 	int size1;
@@ -247,25 +245,17 @@ private:
 int main()
 {
 	setlocale(LC_ALL, "rus");
-	HT Table(5);
+	int s;
+	std::cin >> s;
+	HT Table(s);
 	list record;
 	Table.Search(record);
-	Table.Delete(record);
-	Table.Delete(record);
-	Table.Delete(record);
-	Table.Delete(record);
-	Table.Delete(record);
-	Table.Delete(record);
-	Table.Search(record);
-	Table.Search(record);
-	Table.Search(record);
-	Table.Search(record);
-	Table.Print();
 	record.name.names = "Ваяй Михаил Сергеевич";
 	record.time.hour = 8;
 	record.time.mint = 30;
 	Table.Add(record);
-	record.name.names = "Ваяй Михил Сергеевич";
+	Table.Print();
+	record.name.names = "Ваяй Михаил Сергеевич";
 	record.time.hour = 8;
 	record.time.mint = 30;
 	Table.Add(record);
@@ -273,36 +263,48 @@ int main()
 	record.time.hour = 8;
 	record.time.mint = 30;
 	Table.Add(record);
+	Table.Print();
 	record.name.names = "Ваяй Михаил Сергеевич";
 	record.time.hour = 18;
 	record.time.mint = 20;
 	Table.Add(record);
+	Table.Print();
+	record.name.names = "Ваяй Михаил Сергеевич";
+	record.time.hour = 18;
+	record.time.mint = 20;
+	Table.Add(record);
+	Table.Search(record);
 	record.name.names = "Ваяй Мл Сергеевич";
 	record.time.hour = 10;
 	record.time.mint = 30;
 	Table.Add(record);
-	record.name.names = "Ваяй Михаил Сергеевич";
-	record.time.hour = 10;
-	record.time.mint = 30;
-	Table.Add(record);
-	record.name.names = "Вй Михаил Серч";
+	Table.Print();
+	record.name.names = "Ваяй Михил Сергеевич";
 	record.time.hour = 10;
 	record.time.mint = 30;
 	Table.Add(record);
 	Table.Print();
-	record.name.names = "Вй Михаил Серч";
-	record.time.hour = 10;
+	record.name.names = "Ваяй Михаил Сергеевич";
+	record.time.hour = 8;
 	record.time.mint = 30;
 	Table.Delete(record);
+	Table.Print();
+	record.name.names = "Ваяй Михаил Сергеевич";
+	record.time.hour = 8;
+	record.time.mint = 30;
+	Table.Add(record);
 	Table.Print();
 	record.name.names = "Ваяй Михаил Сергеевич";
 	record.time.hour = 18;
 	record.time.mint = 20;
 	Table.Search(record);
+	record.name.names = "Ваяй Михаил Сергеевич";
+	record.time.hour = 18;
+	record.time.mint = 20;
 	Table.Delete(record);
-	record.name.names = "Ваяй Михил Сергеевич";
-	record.time.hour = 8;
-	record.time.mint = 30;
+	Table.Delete(record);
+	Table.Delete(record);
 	Table.Print();
+
 	return 0;
 }

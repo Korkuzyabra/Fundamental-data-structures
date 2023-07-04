@@ -97,12 +97,15 @@ public:
 
 		key[0] = 0;
 
-		for (int count = 0; count < vertices - 1; ++count) {
+		for (int count = 0; count < vertices - 1; ++count) 
+		{
 			int minKey = INT_MAX;
 			int minIndex = -1;
 
-			for (int v = 0; v < vertices; ++v) {
-				if (!mstSet[v] && key[v] < minKey) {
+			for (int v = 0; v < vertices; ++v) 
+			{
+				if (!mstSet[v] && key[v] < minKey) 
+				{
 					minKey = key[v];
 					minIndex = v;
 				}
@@ -110,8 +113,10 @@ public:
 
 			mstSet[minIndex] = true;
 
-			for (int v = 0; v < vertices; ++v) {
-				if (matrix[minIndex][v] != 0 && !mstSet[v] && matrix[minIndex][v] < key[v]) {
+			for (int v = 0; v < vertices; ++v) 
+			{
+				if (matrix[minIndex][v] != 0 && !mstSet[v] && matrix[minIndex][v] < key[v])
+				{
 					parent[v] = minIndex;
 					key[v] = matrix[minIndex][v];
 				}
@@ -119,7 +124,8 @@ public:
 		}
 
 		std::cout << "Minimum Spanning Tree:" << std::endl;
-		for (int i = 1; i < vertices; ++i) {
+		for (int i = 1; i < vertices; ++i) 
+		{
 			std::cout << parent[i] << " - " << i << " : " << matrix[i][parent[i]] << std::endl;
 		}
 	}
@@ -169,11 +175,11 @@ int main()
 	graph.print();
 	graph.DFS(0);
 	graph.primMST();
-	/*graph.addVertex();
-	graph.print();*/
-	/*graph.addEdge(1, 2, 6);
-	graph.print();*/
-	/*graph.removeEdge(1, 2);
-	graph.print();*/
+	graph.addVertex();
+	graph.print();
+	graph.addEdge(1, 2, 6);
+	graph.print();
+	graph.removeEdge(1, 2);
+	graph.print();
 	return 0;
 }

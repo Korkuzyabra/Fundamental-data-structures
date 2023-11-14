@@ -1,0 +1,5 @@
+D:\домашка\Плюсы программы\Курсовая_1\x64\Debug\Курсовая_1.vcxproj.AssemblyReference.cache
+D:\домашка\Плюсы программы\Курсовая_1\x64\Debug\Курсовая_1.vcxproj.SuggestedBindingRedirects.cache
+D:\домашка\Плюсы программы\Курсовая_1\x64\Debug\Курсовая_1.exe
+D:\домашка\Плюсы программы\Курсовая_1\x64\Debug\Курсовая1.Main.resources
+D:\домашка\Плюсы программы\Курсовая_1\x64\Debug\Курсовая_1.vcxproj.GenerateResource.cache
